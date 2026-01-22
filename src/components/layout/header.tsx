@@ -159,14 +159,16 @@ export function Header({ user }: HeaderProps) {
                 </DropdownMenuItem>
 
                 {isAdmin && (
-                  <DropdownMenuItem className="flex items-start gap-4 p-3 rounded-xl cursor-pointer hover:bg-slate-50 focus:bg-slate-50 transition-colors outline-none focus:outline-none">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-200/50 text-slate-600 shadow-sm">
-                      <Shield className="h-5 w-5 fill-slate-600/20" />
-                    </div>
-                    <div className="flex flex-col pt-0.5">
-                      <span className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">Admin-Bereich</span>
-                      <span className="text-xs text-slate-500 font-medium">Benutzer & Rechte verwalten</span>
-                    </div>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-start gap-4 p-3 rounded-xl !cursor-pointer hover:bg-slate-50 focus:bg-slate-50 transition-colors outline-none focus:outline-none w-full">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-200/50 text-slate-600 shadow-sm">
+                        <Shield className="h-5 w-5 fill-slate-600/20" />
+                      </div>
+                      <div className="flex flex-col pt-0.5">
+                        <span className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">Admin-Bereich</span>
+                        <span className="text-xs text-slate-500 font-medium">Benutzer & Rechte verwalten</span>
+                      </div>
+                    </Link>
                   </DropdownMenuItem>
                 )}
               </div>
