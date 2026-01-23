@@ -31,6 +31,7 @@ export async function HeaderServer() {
     role: profile?.role || 'User',
     agencyName: Array.isArray(profile?.agency) ? profile?.agency[0]?.name : profile?.agency?.name || 'Behörde',
     email: user.email,
+    id: user.id,
   }
 
   return <Header user={userData} />

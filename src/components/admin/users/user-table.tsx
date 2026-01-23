@@ -137,7 +137,7 @@ export function UserTable({ users, agencies }: UserTableProps) {
   return (
     <>
       <div className="space-y-4">
-        {/* Toolbar */}
+        {/* Toolbar - Clean, only Search */}
         <div className="flex items-center justify-between">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
@@ -151,60 +151,63 @@ export function UserTable({ users, agencies }: UserTableProps) {
               className="pl-9 bg-white dark:bg-slate-950"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Filter className="h-4 w-4" /> Filter
-            </Button>
-          </div>
         </div>
 
-        {/* Table */}
+        {/* Table - 6 Columns */}
         <div className="rounded-md border bg-white dark:bg-slate-950">
           <Table>
             <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
               <TableRow>
-                <TableHead className="w-[300px]">Benutzer</TableHead>
+                <TableHead className="w-[250px]">Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Einrichtung</TableHead>
                 <TableHead>Rolle</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-[140px]">Status</TableHead>
                 <TableHead className="text-right">Aktionen</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-slate-500">
+                  <TableCell colSpan={6} className="h-24 text-center text-slate-500">
                     Keine Benutzer gefunden.
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedUsers.map((user) => (
                   <TableRow key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Column 1: Identity */}
                     <TableCell>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Avatar className="h-9 w-9">
                           <AvatarFallback className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                             {getInitials(user.firstName, user.lastName, user.email)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
+                        <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
                             {user.firstName} {user.lastName}
-                          </span>
-                          <span className="text-xs text-slate-500">{user.email}</span>
-                        </div>
+                        </span>
                       </div>
                     </TableCell>
+                    
+                    {/* Column 2: Email */}
+                    <TableCell>
+                        <span className="text-slate-500 text-sm">{user.email}</span>
+                    </TableCell>
+
+                    {/* Column 3: Agency */}
                     <TableCell>
                       {user.agencyName ? (
                         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                           <Building2 className="h-3.5 w-3.5" />
-                          <span className="text-sm">{user.agencyName}</span>
+                          <span className="text-sm truncate max-w-[150px]" title={user.agencyName}>{user.agencyName}</span>
                         </div>
                       ) : (
                         <span className="text-slate-400 italic text-sm">Keine Zuordnung</span>
                       )}
                     </TableCell>
+
+                    {/* Column 4: Role */}
                     <TableCell>
                       {user.role === 'admin' ? (
                         <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200 shadow-none gap-1 pl-1.5">
@@ -216,6 +219,8 @@ export function UserTable({ users, agencies }: UserTableProps) {
                         </Badge>
                       )}
                     </TableCell>
+
+                    {/* Column 5: Status */}
                     <TableCell>
                       {user.isActive ? (
                         <div className="flex items-center gap-2">
@@ -229,6 +234,8 @@ export function UserTable({ users, agencies }: UserTableProps) {
                         </div>
                       )}
                     </TableCell>
+
+                    {/* Column 6: Actions */}
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

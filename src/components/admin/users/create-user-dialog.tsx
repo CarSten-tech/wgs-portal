@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -48,6 +49,8 @@ interface CreateUserDialogProps {
 }
 
 export function CreateUserDialog({ agencies }: CreateUserDialogProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -70,28 +73,32 @@ export function CreateUserDialog({ agencies }: CreateUserDialogProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true)
-    try {
-      const result = await createUser({
-        email: values.email,
-        password: values.password,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        role: values.role,
-        agencyId: values.agencyId || '', 
-      })
+    // 1. Perform Server Action
+    const result = await createUser({
+      email: values.email,
+      password: values.password,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      role: values.role,
+      agencyId: values.agencyId || '', 
+    })
 
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success(`Benutzer erstellt. PW: ${values.password}`)
-        setOpen(false)
-        form.reset()
-      }
-    } catch (error) {
-      toast.error('Ein unerwarteter Fehler ist aufgetreten')
-    } finally {
-      setLoading(false)
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      // 2. Close Modal FIRST
+      setOpen(false)
+      form.reset() // Reset form logic
+
+      // 3. Show Toast
+      toast.success(`Benutzer erstellt. PW: ${values.password}`)
+      
+      // 4. Refresh Router
+      startTransition(() => {
+        router.refresh()
+      })
     }
+    setLoading(false)
   }
 
   return (
@@ -175,7 +182,7 @@ export function CreateUserDialog({ agencies }: CreateUserDialogProps) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="role"
@@ -184,14 +191,14 @@ export function CreateUserDialog({ agencies }: CreateUserDialogProps) {
                     <FormLabel>Rolle</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="cursor-pointer">
                           <SelectValue placeholder="Wähle eine Rolle" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="user" className="cursor-pointer">User</SelectItem>
+                        <SelectItem value="admin" className="cursor-pointer">Admin</SelectItem>
+                        <SelectItem value="power_user" className="cursor-pointer">Poweruser</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -207,14 +214,14 @@ export function CreateUserDialog({ agencies }: CreateUserDialogProps) {
                     <FormLabel>Einrichtung</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="cursor-pointer">
                           <SelectValue placeholder="Wähle Einrichtung" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                         <SelectItem value="none">Keine</SelectItem>
+                         <SelectItem value="none" className="cursor-pointer">Keine</SelectItem>
                         {agencies.map((agency) => (
-                          <SelectItem key={agency.id} value={agency.id}>
+                          <SelectItem key={agency.id} value={agency.id} className="cursor-pointer">
                             {agency.name}
                           </SelectItem>
                         ))}

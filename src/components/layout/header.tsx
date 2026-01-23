@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -18,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,10 +34,14 @@ interface HeaderProps {
     role: string
     agencyName: string
     email?: string
+    id: string
   }
 }
 
 export function Header({ user }: HeaderProps) {
+  /* Existing code ... */
+  const [mounted, setMounted] = useState(false)
+  
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
 
@@ -49,6 +55,27 @@ export function Header({ user }: HeaderProps) {
   const displayName = `${user.firstName} ${user.lastName}`.trim() || 'Benutzer'
   const displayRole = user.role.charAt(0).toUpperCase() + user.role.slice(1)
   const isAdmin = user.role === 'admin'
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+        <header className="sticky top-0 left-0 right-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90">
+             <div className="flex h-[72px] items-center justify-between px-6 lg:px-8">
+                 <div className="flex items-center gap-3 select-none">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                    <Home className="h-5 w-5 fill-current" />
+                  </div>
+                  <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    WGS-Portal
+                  </span>
+                </div>
+             </div>
+        </header>
+    )
+  }
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90">
@@ -98,19 +125,7 @@ export function Header({ user }: HeaderProps) {
             <span className="sr-only">Toggle theme</span>
           </Button>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative mr-2 h-10 w-10 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 outline-none focus:outline-none focus-visible:ring-0">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-950 pointer-events-none" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 p-4 rounded-xl shadow-xl border-slate-100 dark:border-slate-800">
-               <div className="flex items-center justify-center h-20 text-sm text-slate-500 dark:text-slate-400">
-                 Keine neuen Benachrichtigungen
-               </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <NotificationBell userId={user.id} />
 
           <div className="h-8 w-px bg-slate-200 mx-2 dark:bg-slate-800" />
 

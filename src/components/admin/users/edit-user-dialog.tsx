@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -57,6 +58,8 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ user, agencies, open, onOpenChange }: EditUserDialogProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [loading, setLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -81,25 +84,29 @@ export function EditUserDialog({ user, agencies, open, onOpenChange }: EditUserD
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true)
-    try {
-      const result = await updateUser(user.id, {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        role: values.role,
-        agencyId: values.agencyId === 'none' ? '' : values.agencyId || '', 
-      })
+    // 1. Perform Server Action
+    const result = await updateUser(user.id, {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      role: values.role,
+      agencyId: values.agencyId === 'none' ? '' : values.agencyId || '', 
+    })
 
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success('Benutzer aktualisiert')
-        onOpenChange(false)
-      }
-    } catch (error) {
-      toast.error('Fehler beim Aktualisieren')
-    } finally {
-      setLoading(false)
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      // 2. Close Modal FIRST (optimistic close)
+      onOpenChange(false)
+      
+      // 3. Show Toast
+      toast.success('Benutzer aktualisiert')
+
+      // 4. Refresh Router (after closing to prevent UI thrashing)
+      startTransition(() => {
+        router.refresh()
+      })
     }
+    setLoading(false)
   }
 
   return (
@@ -152,14 +159,14 @@ export function EditUserDialog({ user, agencies, open, onOpenChange }: EditUserD
                     <FormLabel>Rolle</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="cursor-pointer">
                           <SelectValue placeholder="Wähle eine Rolle" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="user" className="cursor-pointer">User</SelectItem>
+                        <SelectItem value="admin" className="cursor-pointer">Admin</SelectItem>
+                        <SelectItem value="power_user" className="cursor-pointer">Poweruser</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -175,14 +182,14 @@ export function EditUserDialog({ user, agencies, open, onOpenChange }: EditUserD
                     <FormLabel>Einrichtung</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || 'none'}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="cursor-pointer">
                           <SelectValue placeholder="Wähle Einrichtung" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                         <SelectItem value="none">Keine</SelectItem>
+                         <SelectItem value="none" className="cursor-pointer">Keine</SelectItem>
                         {agencies.map((agency) => (
-                          <SelectItem key={agency.id} value={agency.id}>
+                          <SelectItem key={agency.id} value={agency.id} className="cursor-pointer">
                             {agency.name}
                           </SelectItem>
                         ))}
